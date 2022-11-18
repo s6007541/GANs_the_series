@@ -15,7 +15,8 @@ b2 = 0.999
 latent_dim = 100
 img_size = 28
 channels = 1
-
+cwd = os.path.abspath(os.getcwd())
+savedir = os.path.join(cwd, 'vanilla_epochs')
 
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 x_train = x_train.reshape(x_train.shape[0], 28, 28, 1).astype('float32')
@@ -121,15 +122,18 @@ def train(dataset, epochs, savefig = False):
 
         print ('epoch {} takes {:.7f} sec. G Loss {:.7f}. D Loss {:.7f}.'.format(epoch + 1, time.time()-start, gen_loss,disc_loss))
         if savefig == True:
-            %matplotlib inline
+            # %matplotlib inline
             generated_test_images = generator([testnoise])
 #             print(generated_test_images.shape)
             fig, axes = plt.subplots(2,10, figsize = (20,4))
             for i,ax in enumerate(axes.flat):
                 ax.imshow(generated_test_images[i],cmap='gray')
                 ax.axis("off")
-            fig.suptitle("epoch {}".format(epoch), fontsize = 20)
-            plt.savefig('./vanilla_epoch_{:04d}.png'.format(epoch))
+            fig.suptitle("epoch {}".format(epoch+1), fontsize = 20)
+            
+            if not os.path.exists(savedir):
+                os.mkdir(savedir)
+            plt.savefig(os.path.join(savedir, 'vanilla_epoch_{:04d}.png'.format(epoch+1)))
             plt.close(fig)
             
 train(train_dataset, epochs, True)
@@ -146,11 +150,12 @@ for i,ax in enumerate(axes.flat):
     ax.axis("off")
     
     
-anim_file = 'dcgan.gif'
+anim_file = 'gan.gif'
 import glob
 import imageio.v2
 with imageio.get_writer(anim_file, mode='I') as writer:
-    filenames = glob.glob('./vanilla_epoch_*.png')
+    
+    filenames = glob.glob(os.path.join(savedir,'./vanilla_epoch_*.png' ))
     filenames = sorted(filenames)
     for filename in filenames:
         image = imageio.v2.imread(filename)
